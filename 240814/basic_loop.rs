@@ -29,5 +29,21 @@ fn test_loop(ceil: i32) -> i32 {
         println!("for.. {index}");
     }
 
+    let mut cnt=1;
+    loop {
+        if cnt > ceil {
+            break;
+        }
+
+        println!("loop.. cnt={cnt}");
+        cnt += 1;
+    }
+
+    let mut jump=0;
+    while jump < ceil {
+        jump += 2;
+        println!("while.. jump={jump}");
+    }
+
     return ceil * 2;
 }
