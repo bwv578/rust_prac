@@ -7,10 +7,16 @@ fn main(){
 }
 
 fn calculate(expression:&String) {
-    split(expression);
+    let args:Vec<String> = split(expression);
+    println!("CALC split result:");
+    println!("{:?}", args);
+
+    //for arg in *(&mut args){
+    //    println!("arg: {}", arg);
+    //}
 }
 
-fn split(expression:&String) -> Vec<String>{
+fn split(expression:&String) -> Vec<String> {
     let mut depth:i32 = 0;
     let mut args:Vec<String> = Vec::new();
     let mut num_bucket:String = "".to_string();
@@ -58,23 +64,6 @@ fn split(expression:&String) -> Vec<String>{
         }
     }
 
-    println!("split result:");
-    println!("{:?}", args);
+    args.push(num_bucket);    
     return args;
 }
-
-/*fn add(arg1:f64, arg2:f64) -> f64 {
-    print!("add start");
-}
-
-fn subtract(arg1:f64, arg2:f64) -> f64 {
-    print!("subtract start");
-}
-
-fn divide(arg1:f64, arg2:f64) -> f64 {
-    print!("divied start");
-}
-
-fn multiply(arg1:f64, arg2:f64) -> f64 {
-    print!("multiply start");
-}*/
