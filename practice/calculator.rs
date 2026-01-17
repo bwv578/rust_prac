@@ -1,26 +1,42 @@
 fn main(){
     let input: Vec<String> = std::env::args().collect();
-    println!("check args:");
-    println!("{:?}", input);
     calculate(&input[1]);
-    //print!("{} = {}", i);
 }
 
-fn calculate(expression:&String) {
-    let args:Vec<String> = split(expression);
-    println!("CALC split result:");
-    println!("{:?}", args);
+fn calculate(expression:&String) -> String {
+    let mut args:Vec<String> = split(expression);
+    //println!("CALC split result:");
+    //println!("{:?}", args);
 
-    //for arg in *(&mut args){
-    //    println!("arg: {}", arg);
-    //}
+    // 1. solve (...)
+    let mut i:usize = 0;
+    while i < args.len() {
+        let arg = &mut args[i];
+        
+        match arg.chars().next() {
+            Some(c) => {
+                if c == '?'{
+                    *arg = calculate( &(arg.chars().skip(1).collect()) );
+                }
+            }
+            None => {}
+        }
+
+        i += 2;
+    }
+
+    // 2. solve * /
+    // 3. solve + -
+
+    println!("res:{:?}", &args);
+    return String::from("some result");
 }
 
 fn split(expression:&String) -> Vec<String> {
     let mut depth:i32 = 0;
     let mut args:Vec<String> = Vec::new();
-    let mut num_bucket:String = "".to_string();
-    let mut exp_bucket:String = "".to_string();
+    let mut num_bucket:String = String::from("");
+    let mut exp_bucket:String = String::from("?");
     
     for c in expression.chars(){
         match c {
@@ -30,9 +46,11 @@ fn split(expression:&String) -> Vec<String> {
                 if depth>0 {
                     exp_bucket.push(c);
                 }else {
-                    args.push(num_bucket);
-                    num_bucket = "".to_string();
-                    args.push(c.to_string());
+                    if num_bucket.len()>0 {
+                        args.push(num_bucket);
+                    }
+                    num_bucket = String::from("");
+                    args.push(String::from(c));
                 }
             }
 
@@ -50,7 +68,7 @@ fn split(expression:&String) -> Vec<String> {
                     exp_bucket.push(c);
                 }else {
                     args.push(exp_bucket);
-                    exp_bucket = "".to_string();
+                    exp_bucket = String::from("?");
                 }
             }
 
@@ -63,7 +81,10 @@ fn split(expression:&String) -> Vec<String> {
             }
         }
     }
+    
+    if num_bucket.len()>0 {
+        args.push(num_bucket);
+    }
 
-    args.push(num_bucket);    
     return args;
 }
