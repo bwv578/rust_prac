@@ -1,35 +1,73 @@
 fn main(){
     let input: Vec<String> = std::env::args().collect();
-    calculate(&input[1]);
+    println!("result: {}" , calculate(&input[1]));
 }
 
 fn calculate(expression:&String) -> String {
     let mut args:Vec<String> = split(expression);
-    //println!("CALC split result:");
-    //println!("{:?}", args);
 
-    // 1. solve (...)
+    // 1. solve (..exp..)
     let mut i:usize = 0;
     while i < args.len() {
         let arg = &mut args[i];
         
         match arg.chars().next() {
-            Some(c) => {
-                if c == '?'{
-                    *arg = calculate( &(arg.chars().skip(1).collect()) );
-                }
+            Some('?') => {
+                *arg = calculate( &(arg.chars().skip(1).collect()) );
             }
-            None => {}
+            _ => {}
         }
 
         i += 2;
     }
 
-    // 2. solve * /
-    // 3. solve + -
+    // 2. operate * /
+    i = 1;
+    while i < args.len() {
+        let operator = args[i].chars().next();
+        let lhs:f64 = args[i-1].parse::<f64>().unwrap();
+        let rhs:f64 = args[i+1].parse::<f64>().unwrap();
 
-    println!("res:{:?}", &args);
-    return String::from("some result");
+        match operator {
+            Some('*') => {
+                //let v = &mut args[i-1];
+                //*v = (lhs * rhs).to_string();
+                args[i-1] = (lhs * rhs).to_string();
+                args.remove(i+1);
+                args.remove(i);
+            }
+            Some('/') => {
+                args[i-1] = (lhs / rhs).to_string();
+                args.remove(i+1);
+                args.remove(i);
+            }
+            _ => {i += 2;}
+        }
+    }
+
+    // 3. operate + -
+    i = 1;
+    while i < args.len() {
+        let operator = args[i].chars().next();
+        let lhs:f64 = args[i-1].parse::<f64>().unwrap();
+        let rhs:f64 = args[i+1].parse::<f64>().unwrap();
+
+        match operator {
+            Some('+') => {
+                args[i-1] = (lhs + rhs).to_string();
+                args.remove(i+1);
+                args.remove(i);
+            }
+            Some('-') => {
+                args[i-1] = (lhs - rhs).to_string();
+                args.remove(i+1);
+                args.remove(i);
+            }
+            _ => {i += 2;}
+        }
+    }
+
+    return args.remove(0);
 }
 
 fn split(expression:&String) -> Vec<String> {
