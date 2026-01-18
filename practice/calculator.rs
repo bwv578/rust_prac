@@ -5,38 +5,21 @@ fn main(){
 
 fn calculate(expression:&String) -> String {
     let mut args:Vec<String> = split(expression);
+    let mut i:usize = 1;
 
-    // 1. solve (..exp..)
-    let mut i:usize = 0;
+    // 1. operate * /
     while i < args.len() {
-        let arg = &mut args[i];
-        
-        match arg.chars().next() {
-            Some('?') => {
-                *arg = calculate( &(arg.chars().skip(1).collect()) );
-            }
-            _ => {}
-        }
-
-        i += 2;
-    }
-
-    // 2. operate * /
-    i = 1;
-    while i < args.len() {
-        let operator = args[i].chars().next();
-        let lhs:f64 = args[i-1].parse::<f64>().unwrap();
-        let rhs:f64 = args[i+1].parse::<f64>().unwrap();
-
-        match operator {
+        match args[i].chars().next() {
             Some('*') => {
-                //let v = &mut args[i-1];
-                //*v = (lhs * rhs).to_string();
+                let lhs:f64 = parse_token(&args[i-1]);
+                let rhs:f64 = parse_token(&args[i+1]);
                 args[i-1] = (lhs * rhs).to_string();
                 args.remove(i+1);
                 args.remove(i);
             }
             Some('/') => {
+                let lhs:f64 = parse_token(&args[i-1]);
+                let rhs:f64 = parse_token(&args[i+1]);
                 args[i-1] = (lhs / rhs).to_string();
                 args.remove(i+1);
                 args.remove(i);
@@ -45,20 +28,20 @@ fn calculate(expression:&String) -> String {
         }
     }
 
-    // 3. operate + -
+    // 2. operate + -
     i = 1;
     while i < args.len() {
-        let operator = args[i].chars().next();
-        let lhs:f64 = args[i-1].parse::<f64>().unwrap();
-        let rhs:f64 = args[i+1].parse::<f64>().unwrap();
-
-        match operator {
+        match args[i].chars().next() {
             Some('+') => {
+                let lhs:f64 = parse_token(&args[i-1]);
+                let rhs:f64 = parse_token(&args[i+1]);
                 args[i-1] = (lhs + rhs).to_string();
                 args.remove(i+1);
                 args.remove(i);
             }
             Some('-') => {
+                let lhs:f64 = parse_token(&args[i-1]);
+                let rhs:f64 = parse_token(&args[i+1]);
                 args[i-1] = (lhs - rhs).to_string();
                 args.remove(i+1);
                 args.remove(i);
@@ -68,6 +51,15 @@ fn calculate(expression:&String) -> String {
     }
 
     return args.remove(0);
+}
+
+fn parse_token(token:&String) -> f64 {
+    if token.chars().next() == Some('?') {
+        return calculate(
+            &( token.chars().skip(1).collect() )
+        ).parse::<f64>().unwrap();
+    }
+    return token.parse::<f64>().unwrap();
 }
 
 fn split(expression:&String) -> Vec<String> {
