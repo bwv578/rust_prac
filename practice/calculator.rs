@@ -4,8 +4,16 @@ fn main(){
 }
 
 fn calculate(expression:&String) -> String {
-    let mut args:Vec<String> = split(expression);
+    let mut args:Vec<String>;
     let mut i:usize = 1;
+
+    if expression.chars().next() == Some('-') {
+        let mut prefixed:String = String::from("0");
+        prefixed.push_str(expression);
+        args = split(&prefixed);
+    }else{
+        args = split(expression);
+    }
 
     // 1. operate * /
     while i < args.len() {
