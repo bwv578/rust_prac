@@ -1,14 +1,11 @@
 mod utils;
-mod models {
-    pub mod middle_format;
-    pub mod text_file;
-}
+mod core;
+mod models;
 
 use std::env;
 use std::collections::HashMap;
 
 use crate::models::text_file::TextFile;
-
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -37,10 +34,11 @@ fn execute(options:HashMap<String, String>) {
         Some(file_path) => TextFile::new(file_path),
         _ => {panic!("Source file is required.\nex) --from <path>");}
     };
+    source.impl_as_reader();
 
     let mut target:TextFile = match options.get(&String::from("out")) {
         Some(file_path) => TextFile::new(file_path),
-        _ => source.clone()
+        _ => source.shell_copy()
     };
 
     match options.get(&String::from("as")) {
@@ -52,8 +50,8 @@ fn execute(options:HashMap<String, String>) {
         Some(format) => {
             target
                 .append_name(&String::from("."))
-                .append_name(format);
-            target.set_format(format);
+                .append_name(format)
+                .set_format(format);
         }
         _ => {}
     }
@@ -61,4 +59,18 @@ fn execute(options:HashMap<String, String>) {
     println!("exec source : {:#?}", source);
     println!("exec target : {:#?}", target);
 
+    //test
+    loop{
+        match &mut source.iter {
+            Some(iter) => {
+                match &mut iter.next() {
+                    Some(word) => {
+                        println!("iter - next word is {}", word);
+                    }
+                    _ => {break;}
+                }
+            }
+            None => {break;}
+        }
+    }
 }

@@ -1,58 +1,15 @@
-use std::mem::take;
+use std::io::Error;
 use crate::utils::string_utils::mirror;
+use crate::utils::file_utils::WordIter;
 
 #[derive(Debug)]
-#[derive(Clone)]
 pub struct TextFile {
     pub name:String,
-    pub format:String
+    pub format:String,
+    pub iter: Option<WordIter>,
 }
 
 impl TextFile {
-
-    /*pub fn new(file_name:&String) -> Self {
-        let mut name = String::from("");
-        let mut format = String::from(""); 
-
-        let fname_chars:Vec<char> = file_name.chars().collect();
-        let mut i:usize = fname_chars.len();
-        let mut dotted:bool = false;
-        
-        while i>0 {
-            let c:char = fname_chars[i-1];
-
-            if dotted {
-                name.push(c);
-            }else if c=='.' {
-                if i==1 {
-                    name = std::mem::take(&mut format);
-                    name.push(c);
-                }else {
-                    match fname_chars.get(i-2) {
-                        Some('/')|Some('.') => {
-                            name = std::mem::take(&mut format);
-                            name.push(c);
-                        }
-                        _ => {}
-                    }
-                }
-                dotted = true;
-            }else {
-                format.push(c);
-            }
-
-            i-=1;
-        }
-
-        if name==String::from("") {
-            name = std::mem::take(&mut format);
-        }
-
-        return Self {
-            name: mirror(&name), 
-            format: mirror(&format)
-        }
-    }*/
 
     pub fn new(file_name:&String) -> Self {
         let mut inferred_format:String = String::from("");
@@ -70,7 +27,8 @@ impl TextFile {
 
         return Self {
             name: file_name.clone(),
-            format: mirror(&inferred_format)
+            format: mirror(&inferred_format),
+            iter: None
         }
     }
 
@@ -88,4 +46,27 @@ impl TextFile {
         self.name.push_str(suffix);
         return self;
     }
+
+    pub fn shell_copy(self:&mut Self) -> Self {
+        return Self {
+            name: self.name.clone(),
+            format: self.format.clone(),
+            iter: None
+        }
+    }
+
+    pub fn impl_as_reader(self:&mut Self) -> &mut Self {
+        let iter_result:Result<WordIter, Error>= WordIter::new(&self.name);
+        match iter_result {
+            Ok(iter) => {self.iter = Some(iter);}
+            Err(err) => {panic!("Invalid file path: {}", self.name)}
+        }
+        return self;
+    }
+
+    pub fn impl_as_writer(){}
+
+/*    pub fn read_word(self:&mut Self) -> String {
+
+    }*/
 }
