@@ -9,44 +9,56 @@ use std::collections::HashMap;
 
 use crate::models::text_file::TextFile;
 
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    println!("args: {:?}", args);
     
     let mut options:HashMap<String, String> = HashMap::new();
     let mut k:String = String::from("");
 
     for arg in args.iter().skip(0) {
-        match arg.chars().next() {
-            Some('-') => {
-                k = arg.chars().skip(1).collect();
+        match arg.chars().take(2).collect::<String>().as_str() {
+            "--" => {
+                k = arg.chars().skip(2).collect();
             }
-            Some(_c) => {
+            _ => {
                 options.insert(k.clone(), arg.clone());
             }
-            _ => {}
         }
     }
 
-    println!("check map : {:?}", options);
     execute(options);
 }
 
 
 fn execute(options:HashMap<String, String>) {
 
-    //let source = TextFile::new(&options.get(&String::from("from")));
-    let source:TextFile = match options.get(&String::from("from")) {
-        Some(v) => TextFile::new(v),
-        _ => {panic!("Invalid option value.");}
+    let mut source:TextFile = match options.get(&String::from("from")) {
+        Some(file_path) => TextFile::new(file_path),
+        _ => {panic!("Source file is required.\nex) --from <path>");}
     };
 
-    let target:TextFile = match options.get(&String::from("to")) {
-        Some(v) => TextFile::new(v),
+    let mut target:TextFile = match options.get(&String::from("out")) {
+        Some(file_path) => TextFile::new(file_path),
         _ => source.clone()
     };
 
-    //let target = TextFile::new(&options.get(&String::from("target")));
+    match options.get(&String::from("as")) {
+        Some(format) => {source.set_format(format);}
+        _ => {}
+    }
+
+    match options.get(&String::from("to")) {
+        Some(format) => {
+            target
+                .append_name(&String::from("."))
+                .append_name(format);
+            target.set_format(format);
+        }
+        _ => {}
+    }
+
     println!("exec source : {:#?}", source);
     println!("exec target : {:#?}", target);
+
 }
