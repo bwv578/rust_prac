@@ -2,6 +2,7 @@ use std::mem::take;
 use crate::utils::string_utils::mirror;
 
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct TextFile {
     pub name:String,
     pub format:String
@@ -14,9 +15,7 @@ impl TextFile {
         let mut format = String::from(""); 
 
         let fname_chars:Vec<char> = file_name.chars().collect();
-        let fname_len:usize = fname_chars.len();
-        
-        let mut i:usize = fname_len;
+        let mut i:usize = fname_chars.len();
         let mut dotted = false;
         
         while i>0 {
