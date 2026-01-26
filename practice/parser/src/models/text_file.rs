@@ -1,6 +1,6 @@
 use std::io::Error;
 use crate::utils::string_utils::mirror;
-use crate::utils::file_utils::{DelimitedIter, WordIter};
+use crate::utils::file_utils::{DelimitedIter};
 
 #[derive(Debug)]
 pub struct TextFile {
@@ -15,10 +15,10 @@ impl TextFile {
         let mut inferred_format:String = String::from("");
 
         let vectorized:Vec<char> = file_name.chars().collect();
-        let mut i:usize = vectorized.len()-1;
+        let mut i:usize = vectorized.len();
 
-        while i>=0 {
-            let c:char = vectorized[i];
+        while i>0 {
+            let c:char = vectorized[i-1];
             if c == '.' {break;}
 
             inferred_format.push(c);
@@ -63,7 +63,7 @@ impl TextFile {
                 iter.set_delimiters(&['\n', '\t', ' ']);
                 self.iter = Some(iter);
             }
-            Err(err) => {panic!("Invalid file path: {}", self.name)}
+            Err(_) => {panic!("Invalid file path: {}", self.name)}
         }
         return self;
     }
