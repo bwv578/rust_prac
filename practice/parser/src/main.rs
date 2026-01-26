@@ -63,9 +63,10 @@ fn execute(options:HashMap<String, String>) {
     loop{
         match &mut source.iter {
             Some(iter) => {
+                iter.set_delimiters(&['{', '}', '[', ']', ':', ',', '"']); // json 구분자 테스트
                 match &mut iter.next() {
-                    Some(word) => {
-                        println!("iter - next word is {}", word);
+                    Some(r) => {
+                        println!("String:{} | delimiter:{}", r.0, r.1.unwrap());
                     }
                     _ => {break;}
                 }

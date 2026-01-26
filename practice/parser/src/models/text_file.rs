@@ -1,12 +1,12 @@
 use std::io::Error;
 use crate::utils::string_utils::mirror;
-use crate::utils::file_utils::WordIter;
+use crate::utils::file_utils::{DelimitedIter, WordIter};
 
 #[derive(Debug)]
 pub struct TextFile {
     pub name:String,
     pub format:String,
-    pub iter: Option<WordIter>,
+    pub iter: Option<DelimitedIter>,
 }
 
 impl TextFile {
@@ -56,9 +56,13 @@ impl TextFile {
     }
 
     pub fn impl_as_reader(self:&mut Self) -> &mut Self {
-        let iter_result:Result<WordIter, Error>= WordIter::new(&self.name);
+        //let iter_result:Result<WordIter, Error>= WordIter::new(&self.name);
+        let iter_result:Result<DelimitedIter, Error> = DelimitedIter::new(&self.name);
         match iter_result {
-            Ok(iter) => {self.iter = Some(iter);}
+            Ok(mut iter) => {
+                iter.set_delimiters(&['\n', '\t', ' ']);
+                self.iter = Some(iter);
+            }
             Err(err) => {panic!("Invalid file path: {}", self.name)}
         }
         return self;
@@ -66,7 +70,4 @@ impl TextFile {
 
     pub fn impl_as_writer(){}
 
-/*    pub fn read_word(self:&mut Self) -> String {
-
-    }*/
 }
