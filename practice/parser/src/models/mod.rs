@@ -1,2 +1,2 @@
-pub mod middle_format;
+pub mod intermediate_structure;
 pub mod text_file;

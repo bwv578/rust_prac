@@ -23,6 +23,7 @@ impl DelimitedIter {
             }
         )
     }
+
     pub fn set_delimiters(&mut self, delimiters: &[char]) -> &mut Self {
         self.delimiters.clear();
         for delimiter in delimiters {

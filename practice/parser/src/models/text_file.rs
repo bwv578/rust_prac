@@ -56,11 +56,10 @@ impl TextFile {
     }
 
     pub fn impl_as_reader(self:&mut Self) -> &mut Self {
-        //let iter_result:Result<WordIter, Error>= WordIter::new(&self.name);
         let iter_result:Result<DelimitedIter, Error> = DelimitedIter::new(&self.name);
         match iter_result {
             Ok(mut iter) => {
-                iter.set_delimiters(&['\n', '\t', ' ']);
+                iter.set_chars_to_ignore(&[' ', '\r', '\n', '\t']);
                 self.iter = Some(iter);
             }
             Err(_) => {panic!("Invalid file path: {}", self.name)}
