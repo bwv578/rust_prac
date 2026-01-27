@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use crate::models::text_file::TextFile;
 
-
 pub fn parse_options(args:&Vec<String>) -> HashMap<String, String>{
     let mut options:HashMap<String, String> = HashMap::new();
     let mut k:String = String::new();
