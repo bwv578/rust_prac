@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Debug)]
+/*#[derive(Debug)]
 #[derive(Clone)]
 pub struct IntermediateStructure {
     pub name: String,
@@ -21,13 +21,13 @@ impl IntermediateStructure {
         return self;
     }
 
-}
+}*/
 
 #[derive(Debug)]
 #[derive(Clone)]
-pub enum DataType {
-    Object(HashMap<String, DataType>),
-    Array(Vec<DataType>),
+pub enum StructuredData {
+    Object(HashMap<String, StructuredData>),
+    Array(Vec<StructuredData>),
     String(String),
     Number(f64),
     Unknown

@@ -1,89 +1,143 @@
+use std::collections::{HashMap, HashSet};
 use std::io::Error;
 use crate::formats::format::Format;
-use crate::models::intermediate_structure::IntermediateStructure;
+use crate::models::intermediate_structure::StructuredData;
 use crate::models::text_file::TextFile;
 use crate::utils::file_utils::DelimitedIter;
 
-pub struct JsonFormat{}
+static JSON_DELIMITERS: [char; 8] = ['{', '}', '[', ']', '"', '\'', ':', ','];
+static JSON_CHARS_TO_IGNORE: [char; 3] = ['\n', '\r', '\t'];
 
-impl Format for JsonFormat {
-    fn construct(&mut self, mut file: TextFile) -> IntermediateStructure {
-        let mut iter: DelimitedIter = match file.iter {
-            Some(iterator) => iterator,
-            None => {panic!("Error while constructing {}.\n (No file iterator.)", file.name)}
-        };
-        iter.set_delimiters(&['\n', '\r', 't']);
-        return self.parse(&mut iter);
+pub struct JsonFormat{
+    iter: DelimitedIter,
+}
+
+impl JsonFormat {
+    pub fn new(file:TextFile) -> JsonFormat {
+        JsonFormat{
+            iter: match file.iter {
+                Some(mut iterator) => {
+                    iterator.set_delimiters(&JSON_DELIMITERS);
+                    iterator.set_chars_to_ignore(&JSON_CHARS_TO_IGNORE);
+                    iterator
+                },
+                _ => panic!("No iterator for the file {}", file.name)
+            }
+        }
     }
 
-    fn parse(&mut self, iter: &mut DelimitedIter) -> IntermediateStructure {
-        let mut object:IntermediateStructure = IntermediateStructure::new();
+}
 
+impl Format for JsonFormat {
+
+    fn parse(&mut self, mut scope:StructuredData) -> StructuredData {
         let mut next:(String, Option<char>);
-        let mut cur_key:String = String::new();
+        let mut buf:String = String::new();
 
-        let mut mode:Mode = Mode::Unknown;
-        let mut target:Target = Target::Key;
-
-        loop {
-            next = match iter.next() {
-                Some(out) => out,
-                None => {break;}
-            };
-
+        while let Some(next) = self.iter.next() {
             match next.1 {
+
                 Some('{') => {
-                    match mode {
-                        Mode::Unknown => {
-                            mode = Mode::MapObject;
-                            //object.data = Some(Box::new(HashMap::new()));
+                    match &mut scope {
+                        StructuredData::Unknown => {
+                            scope = StructuredData::Object(HashMap::new());
                         },
-                        Mode::StringValue => {
-                            //object.data.insert();
+                        StructuredData::Object(obj) => {
+                            obj.insert(
+                                std::mem::take(&mut buf),
+                                self.parse(StructuredData::Object(HashMap::new()))
+                            );
+                        },
+                        StructuredData::Array(arr) => {
+                            arr.push(self.parse(StructuredData::Object(HashMap::new())));
+                        },
+                        StructuredData::String(str) => {
+                            buf.push_str(str);
+                        },
+                        StructuredData::Number(num) => {
+                            panic!("Invalid Format");
                         }
-                        _ => {}
-                    }
-                    match target {
-                        Target::Key => {},
-                        _ => {}
                     }
                 },
+
                 Some('}') => {
-                    match target {
-                        Target::Key => {},
-                        Target::Value => {}
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
                     }
-                    return object;
                 },
-                Some('[') => {},
-                Some(']') => {},
-                Some('\"') | Some('\'') => {},
-                Some(':') => {},
-                Some(',') => {},
-                _ => {}
+
+                Some('[') => {
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
+                    }
+                },
+
+                Some(']') => {
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
+                    }
+                },
+
+                Some('\"') | Some('\'') => {
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
+                    }
+                },
+
+                Some(':') => {
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
+                    }
+                },
+
+                Some(',') => {
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
+                    }
+                },
+
+                _ => {
+                    match &mut scope {
+                        StructuredData::Unknown => {},
+                        StructuredData::Object(obj) => {},
+                        StructuredData::Array(arr) => {},
+                        StructuredData::String(str) => {},
+                        StructuredData::Number(num) => {}
+                    }
+                }
+
             }
         }
 
-        return object;
+        scope
     }
 
-    fn export(&mut self, structure: IntermediateStructure) -> Result<String, Error> {
+    fn export(&mut self, structure: StructuredData) -> Result<String, Error> {
         todo!()
     }
 
-}
-
-
-enum Mode {
-    Unknown,
-    MapObject,
-    ArrayObject,
-    Key,
-    StringValue,
-    NumberValue,
-}
-
-enum Target {
-    Key,
-    Value
 }
