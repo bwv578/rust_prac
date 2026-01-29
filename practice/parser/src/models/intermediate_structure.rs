@@ -2,23 +2,33 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 #[derive(Clone)]
-pub struct IntermediateStructure<T> {
+pub struct IntermediateStructure {
     pub name: String,
-    pub data: Option<Box<T>>
+    pub data: Box<DataType>
 }
 
-impl<T> IntermediateStructure<T> {
+impl IntermediateStructure {
 
     pub fn new() -> Self {
         return Self {
             name: String::new(),
-            data: None
+            data: Box::new(DataType::Unknown)
         };
     }
 
-    pub fn set_data(self:&mut Self, data:T) -> &mut Self {
-        self.data = Some(Box::new(data));
+    pub fn set_data(self:&mut Self, data:DataType) -> &mut Self {
+        self.data = Box::new(data);
         return self;
     }
 
+}
+
+#[derive(Debug)]
+#[derive(Clone)]
+pub enum DataType {
+    Object(HashMap<String, DataType>),
+    Array(Vec<DataType>),
+    String(String),
+    Number(f64),
+    Unknown
 }

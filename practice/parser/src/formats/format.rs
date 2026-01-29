@@ -5,7 +5,7 @@ use crate::models::intermediate_structure::IntermediateStructure;
 use crate::utils::file_utils::DelimitedIter;
 
 pub trait Format{
-    fn construct<T> (&mut self, file:TextFile) -> IntermediateStructure<T>;
-    fn parse<T> (&mut self, iter:&mut DelimitedIter) -> IntermediateStructure<T>;
-    fn export<T> (&mut self, structure:IntermediateStructure<T>) -> Result<String, Error>;
+    fn construct (&mut self, file:TextFile) -> IntermediateStructure;
+    fn parse (&mut self, iter:&mut DelimitedIter) -> IntermediateStructure;
+    fn export (&mut self, structure:IntermediateStructure) -> Result<String, Error>;
 }

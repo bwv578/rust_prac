@@ -4,13 +4,10 @@ use crate::models::intermediate_structure::IntermediateStructure;
 use crate::models::text_file::TextFile;
 use crate::utils::file_utils::DelimitedIter;
 
-pub struct JsonFormat{
-    //file_to_read:Option<Box<TextFile>>,
-    //intermediate_struct: Option<Box<IntermediateStructure<T>>>
-}
+pub struct JsonFormat{}
 
 impl Format for JsonFormat {
-    fn construct<U>(&mut self, mut file: TextFile) -> IntermediateStructure<U> {
+    fn construct(&mut self, mut file: TextFile) -> IntermediateStructure {
         let mut iter: DelimitedIter = match file.iter {
             Some(iterator) => iterator,
             None => {panic!("Error while constructing {}.\n (No file iterator.)", file.name)}
@@ -19,10 +16,11 @@ impl Format for JsonFormat {
         return self.parse(&mut iter);
     }
 
-    fn parse<U>(&mut self, iter: &mut DelimitedIter) -> IntermediateStructure<U> {
-        let mut object:IntermediateStructure<U> = IntermediateStructure::new();
+    fn parse(&mut self, iter: &mut DelimitedIter) -> IntermediateStructure {
+        let mut object:IntermediateStructure = IntermediateStructure::new();
 
         let mut next:(String, Option<char>);
+        let mut cur_key:String = String::new();
 
         let mut mode:Mode = Mode::Unknown;
         let mut target:Target = Target::Key;
@@ -37,8 +35,12 @@ impl Format for JsonFormat {
                 Some('{') => {
                     match mode {
                         Mode::Unknown => {
-                            mode = Mode::MapObject
+                            mode = Mode::MapObject;
+                            //object.data = Some(Box::new(HashMap::new()));
                         },
+                        Mode::StringValue => {
+                            //object.data.insert();
+                        }
                         _ => {}
                     }
                     match target {
@@ -65,7 +67,7 @@ impl Format for JsonFormat {
         return object;
     }
 
-    fn export<U>(&mut self, structure: IntermediateStructure<U>) -> Result<String, Error> {
+    fn export(&mut self, structure: IntermediateStructure) -> Result<String, Error> {
         todo!()
     }
 
