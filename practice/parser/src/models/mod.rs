@@ -1,2 +1,2 @@
-pub mod intermediate_structure;
+pub mod structured_data;
 pub mod text_file;

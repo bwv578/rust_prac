@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::io::Error;
 use crate::formats::format::Format;
-use crate::models::intermediate_structure::StructuredData;
+use crate::models::structured_data::StructuredData;
 use crate::models::text_file::TextFile;
 use crate::utils::file_utils::DelimitedIter;
 
@@ -13,30 +13,23 @@ pub struct JsonFormat{
 }
 
 impl JsonFormat {
-    pub fn new(file:TextFile) -> JsonFormat {
-        JsonFormat{
-            iter: match file.iter {
-                Some(mut iterator) => {
-                    iterator.set_delimiters(&JSON_DELIMITERS);
-                    iterator.set_chars_to_ignore(&JSON_CHARS_TO_IGNORE);
-                    iterator
-                },
-                _ => panic!("No iterator for the file {}", file.name)
-            }
-        }
+    pub fn new(file:TextFile) -> Self {
+        let mut json_iter = file.iter.expect("No iterator for the file.");
+        json_iter.set_delimiters(&JSON_DELIMITERS);
+        json_iter.set_chars_to_ignore(&JSON_CHARS_TO_IGNORE);
+        JsonFormat{iter: json_iter,}
     }
-
 }
 
 impl Format for JsonFormat {
 
     fn parse(&mut self, mut scope:StructuredData) -> StructuredData {
-        let mut next:(String, Option<char>);
         let mut buf:String = String::new();
 
         while let Some(next) = self.iter.next() {
             match next.1 {
 
+                // todo Some('\'') 과 Some('"') 각각 케이스 나눠야됨
                 Some('{') => {
                     match &mut scope {
                         StructuredData::Unknown => {
@@ -62,7 +55,7 @@ impl Format for JsonFormat {
 
                 Some('}') => {
                     match &mut scope {
-                        StructuredData::Unknown => {},
+                        StructuredData::Unknown => {todo!("panic")},
                         StructuredData::Object(obj) => {},
                         StructuredData::Array(arr) => {},
                         StructuredData::String(str) => {},
@@ -72,7 +65,9 @@ impl Format for JsonFormat {
 
                 Some('[') => {
                     match &mut scope {
-                        StructuredData::Unknown => {},
+                        StructuredData::Unknown => {
+                            scope = StructuredData::Array(Vec::new());
+                        },
                         StructuredData::Object(obj) => {},
                         StructuredData::Array(arr) => {},
                         StructuredData::String(str) => {},
@@ -82,9 +77,11 @@ impl Format for JsonFormat {
 
                 Some(']') => {
                     match &mut scope {
-                        StructuredData::Unknown => {},
+                        StructuredData::Unknown => {todo!("panic")},
                         StructuredData::Object(obj) => {},
-                        StructuredData::Array(arr) => {},
+                        StructuredData::Array(_arr) => {
+                            return scope;
+                        },
                         StructuredData::String(str) => {},
                         StructuredData::Number(num) => {}
                     }
@@ -92,20 +89,33 @@ impl Format for JsonFormat {
 
                 Some('\"') | Some('\'') => {
                     match &mut scope {
-                        StructuredData::Unknown => {},
+                        StructuredData::Unknown => {
+                            scope = StructuredData::String(String::from("\""));
+                        },
                         StructuredData::Object(obj) => {},
-                        StructuredData::Array(arr) => {},
-                        StructuredData::String(str) => {},
+                        StructuredData::Array(arr) => {
+                            arr.push(
+                                self.parse(StructuredData::String(String::from("\""))))
+                            ;
+                        },
+                        StructuredData::String(str) => {
+                            str.push_str(&next.0);
+                            str.push('"');
+                            return scope;
+                        },
                         StructuredData::Number(num) => {}
                     }
                 },
 
                 Some(':') => {
                     match &mut scope {
-                        StructuredData::Unknown => {},
+                        StructuredData::Unknown => {todo!("panic")},
                         StructuredData::Object(obj) => {},
                         StructuredData::Array(arr) => {},
-                        StructuredData::String(str) => {},
+                        StructuredData::String(str) => {
+                            str.push_str(&next.0);
+                            str.push(':');
+                        },
                         StructuredData::Number(num) => {}
                     }
                 },
@@ -115,7 +125,10 @@ impl Format for JsonFormat {
                         StructuredData::Unknown => {},
                         StructuredData::Object(obj) => {},
                         StructuredData::Array(arr) => {},
-                        StructuredData::String(str) => {},
+                        StructuredData::String(str) => {
+                            str.push_str(&next.0);
+                            str.push(',');
+                        },
                         StructuredData::Number(num) => {}
                     }
                 },
