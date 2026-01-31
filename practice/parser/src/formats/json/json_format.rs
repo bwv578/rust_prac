@@ -1,6 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::io::Error;
 use crate::formats::format::Format;
+use crate::formats::json::json_format::Target::Value;
 use crate::models::structured_data::StructuredData;
 use crate::models::text_file::TextFile;
 use crate::utils::file_utils::DelimitedIter;
@@ -26,6 +27,7 @@ impl JsonFormat {
     }
 }
 
+
 impl Format for JsonFormat {
 
     fn parse(&mut self, mut scope:StructuredData) -> StructuredData {
@@ -41,10 +43,15 @@ impl Format for JsonFormat {
                             scope = StructuredData::Object(HashMap::new());
                         },
                         StructuredData::Object(obj) => {
-                            obj.insert(
-                                std::mem::take(&mut buf),
-                                self.parse(StructuredData::Object(HashMap::new()))
-                            );
+                            match target {
+                                Target::Key => { panic!("Invalid format : Key is required.") },
+                                Target::Value => {
+                                    obj.insert(
+                                        std::mem::take(&mut buf),
+                                        self.parse(StructuredData::Object(HashMap::new()))
+                                    );
+                                }
+                            }
                         },
                         StructuredData::Array(arr) => {
                             arr.push(
@@ -64,7 +71,13 @@ impl Format for JsonFormat {
                 Some('}') => {
                     match &mut scope {
                         StructuredData::Unknown => { panic!("Invalid Format"); },
-                        StructuredData::Object(_obj) => {
+                        StructuredData::Object(obj) => {
+                            if !next.0.trim().is_empty() {
+                                obj.insert(
+                                    std::mem::take(&mut buf),
+                                    StructuredData::String(next.0.trim().to_string())
+                                );
+                            }
                             return scope;
                         },
                         StructuredData::Array(_arr) => { panic!("Invalid Format"); },
@@ -155,6 +168,7 @@ impl Format for JsonFormat {
                     match &mut scope {
                         StructuredData::Unknown => { panic!("Invalid Format"); },
                         StructuredData::Object(_obj) => {
+                            target = Value;
                             buf.push_str(&next.0.trim());
                             if buf.is_empty() {
                                 panic!("Invalid Format : Key is empty");
@@ -173,35 +187,19 @@ impl Format for JsonFormat {
                     match &mut scope {
                         StructuredData::Unknown => { panic!("Invalid Format"); },
                         StructuredData::Object(obj) => {
-                            if !next.0.trim().is_empty() {
-                                
-                                if next.0.trim() == "true" || next.0.trim() == "false" {
-                                    obj.insert(
-                                        std::mem::take(&mut buf),
-                                        StructuredData::String( String::from(next.0.trim()) )
-                                    );
-                                }else {
-                                    obj.insert(
-                                        std::mem::take(&mut buf),
-                                        StructuredData::Number(next.0.trim().parse::<f64>().unwrap())
-                                    );
-                                }
-
-                            }else {
+                            target = Target::Key;
+                            if next.0.trim().is_empty() {
                                 buf.clear();
+                            }else {
+                                obj.insert(
+                                    std::mem::take(&mut buf),
+                                    StructuredData::String(next.0.trim().to_string())
+                                );
                             }
                         },
                         StructuredData::Array(arr) => {
-                            if !next.0.trim().is_empty() { // boolean 또는 숫자
-                                if next.0.trim() == "true" || next.0.trim() == "false" {
-                                    arr.push(
-                                        StructuredData::String( String::from(next.0.trim()) )
-                                    );
-                                }else{
-                                    arr.push(
-                                        StructuredData::Number(next.0.trim().parse::<f64>().unwrap())
-                                    )
-                                }
+                            if !next.0.trim().is_empty() {
+                                arr.push( StructuredData::String(next.0) )
                             }
                         },
                         StructuredData::String(str) => {
@@ -216,18 +214,6 @@ impl Format for JsonFormat {
                     }
                 },
 
-                None => { // 마지막 값
-                    /*match &mut scope {
-                        StructuredData::Unknown => { panic!("Invalid Format"); },
-                        StructuredData::Object(obj) => {
-                        },
-                        StructuredData::Array(arr) => {},
-                        StructuredData::String(str) => {},
-                        StructuredData::Number(num) => {}
-                    }*/
-                    // 항상 ] 또는 }로 끝나야 하므로 포멧 오류 ?
-                    panic!("Invalid Format");
-                }
                 _ => {panic!("세상에 이런일이");}
             }
         }

@@ -51,9 +51,6 @@ pub fn execute(options:HashMap<String, String>) {
         _ => {}
     }
 
-    //println!("exec source : {:#?}", source);
-    //println!("exec target : {:#?}", target);
-
     let mut formatter = get_formatter(source).expect("No formatter available.");
     let result:StructuredData = (*formatter).parse(StructuredData::Unknown);
     println!("structured :  {:#?}", result);
