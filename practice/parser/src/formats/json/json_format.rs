@@ -67,7 +67,7 @@ impl Format for JsonFormat {
                         StructuredData::Object(_obj) => {
                             return scope;
                         },
-                        StructuredData::Array(_arr) => { todo!("panic") },
+                        StructuredData::Array(_arr) => { panic!("Invalid Format"); },
                         StructuredData::String(str) => {
                             str.push_str(&next.0);
                             str.push('}');
@@ -102,7 +102,7 @@ impl Format for JsonFormat {
 
                 Some(']') => {
                     match &mut scope {
-                        StructuredData::Unknown => {todo!("panic")},
+                        StructuredData::Unknown => { panic!("Invalid Format"); },
                         StructuredData::Object(_obj) => { panic!("Invalid Format"); },
                         StructuredData::Array(_arr) => { return scope; },
                         StructuredData::String(str) => {
@@ -155,7 +155,6 @@ impl Format for JsonFormat {
                     match &mut scope {
                         StructuredData::Unknown => { panic!("Invalid Format"); },
                         StructuredData::Object(_obj) => {
-                            // todo: debugger - expect value
                             buf.push_str(&next.0.trim());
                             if buf.is_empty() {
                                 panic!("Invalid Format : Key is empty");
@@ -174,19 +173,35 @@ impl Format for JsonFormat {
                     match &mut scope {
                         StructuredData::Unknown => { panic!("Invalid Format"); },
                         StructuredData::Object(obj) => {
-                            if !next.0.trim().is_empty() { // 숫자 ?
-                                obj.insert(
-                                    buf.clone(),
-                                    StructuredData::Number(next.0.trim().parse::<f64>().unwrap())
-                                );
+                            if !next.0.trim().is_empty() {
+                                
+                                if next.0.trim() == "true" || next.0.trim() == "false" {
+                                    obj.insert(
+                                        std::mem::take(&mut buf),
+                                        StructuredData::String( String::from(next.0.trim()) )
+                                    );
+                                }else {
+                                    obj.insert(
+                                        std::mem::take(&mut buf),
+                                        StructuredData::Number(next.0.trim().parse::<f64>().unwrap())
+                                    );
+                                }
+
+                            }else {
+                                buf.clear();
                             }
-                            buf.clear();
                         },
                         StructuredData::Array(arr) => {
-                            if !next.0.trim().is_empty() { // 숫자?
-                                arr.push(
-                                    StructuredData::Number(next.0.trim().parse::<f64>().unwrap())
-                                )
+                            if !next.0.trim().is_empty() { // boolean 또는 숫자
+                                if next.0.trim() == "true" || next.0.trim() == "false" {
+                                    arr.push(
+                                        StructuredData::String( String::from(next.0.trim()) )
+                                    );
+                                }else{
+                                    arr.push(
+                                        StructuredData::Number(next.0.trim().parse::<f64>().unwrap())
+                                    )
+                                }
                             }
                         },
                         StructuredData::String(str) => {

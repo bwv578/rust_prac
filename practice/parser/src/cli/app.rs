@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 use crate::models::text_file::TextFile;
+use crate::formats::format::Format;
+use crate::formats::json::json_format::JsonFormat;
+use crate::models::structured_data::StructuredData;
 
 pub fn parse_options(args:&Vec<String>) -> HashMap<String, String>{
     let mut options:HashMap<String, String> = HashMap::new();
@@ -18,6 +21,7 @@ pub fn parse_options(args:&Vec<String>) -> HashMap<String, String>{
 
     return options;
 }
+
 
 pub fn execute(options:HashMap<String, String>) {
 
@@ -47,21 +51,18 @@ pub fn execute(options:HashMap<String, String>) {
         _ => {}
     }
 
-    println!("exec source : {:#?}", source);
-    println!("exec target : {:#?}", target);
+    //println!("exec source : {:#?}", source);
+    //println!("exec target : {:#?}", target);
 
-    //test
-    let mut iter = source.iter.as_mut().expect("no source reader.");
+    let mut formatter = get_formatter(source).expect("No formatter available.");
+    let result:StructuredData = (*formatter).parse(StructuredData::Unknown);
+    println!("structured :  {:#?}", result);
+}
 
-    loop{
-        iter.set_delimiters(&['{', '}', '[', ']', ':', ',', '"']); // json 구분자 테스트
-        iter.set_chars_to_ignore(&['\n', '\t', '\r', '\x0B', '\x0C', '\x0A', '\x0A']);
-        match &mut iter.next() {
-            Some(r) => {
-                let delimiter:char = r.1.unwrap_or_else(|| ' ');
-                println!("String:{} | delimiter:{}", r.0, delimiter);
-            }
-            _ => {break;}
-        }
+
+pub fn get_formatter(file:TextFile) -> Option<Box<dyn Format>> {
+    match file.format.as_str() {
+        "json" => Some(Box::new(JsonFormat::new(file))),
+        _ => None,
     }
 }

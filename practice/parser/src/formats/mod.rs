@@ -1,5 +1,5 @@
-mod format;
-mod debugger;
+pub mod format;
+pub mod debugger;
 
 pub mod json{
     pub mod json_format;
