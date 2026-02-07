@@ -53,6 +53,7 @@ pub fn execute(options:HashMap<String, String>) {
 
     let mut formatter = get_formatter(source).expect("No formatter available.");
     let result:StructuredData = (*formatter).parse(StructuredData::Unknown);
+    
     println!("structured :  {:#?}", result);
 }
 

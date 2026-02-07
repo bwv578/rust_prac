@@ -85,7 +85,7 @@ impl Format for JsonFormat {
                             str.push_str(&next.0);
                             str.push('}');
                         },
-                        StructuredData::Number(num) => { panic!("Invalid Format"); },
+                        StructuredData::Number(_num) => { panic!("Invalid Format"); },
                     }
                 },
 
